@@ -11,9 +11,18 @@ end
 
 data = nil
 
+load = -> (object) {
+  if object.instance_of? TestClass
+    object.parameters.each do |p|
+      p.force_encoding("utf-8")
+    end
+  end
+  object
+}
+
 puts 'load marshal'
 File.open( __dir__ + "/test.marshal", "r+" ) do |input_file|
-  data = Marshal.load( input_file )
+  data = Marshal.load( input_file, load )
 end
 
 # Need to hack TestClass.marshal_load to force string encoding of TestClass.parameters to utf-8 so that the string doesn't end up as !binary in the yaml.
@@ -40,6 +49,17 @@ end
 # data['root'].parameters.each do |p|
 #   p.force_encoding("ASCII-8BIT")
 # end
+
+load = -> (object) {
+  if object.instance_of? TestClass
+    object.parameters.each do |p|
+      p.force_encoding("ASCII-8BIT")
+    end
+  end
+  object
+}
+
+data = Marshal.load(Marshal.dump(data), load)
 
 puts 'dump marshal'
 File.open( __dir__ + "/test2.marshal", "w+" ) do |output_file|
